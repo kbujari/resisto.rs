@@ -2,7 +2,6 @@
 // -Joe Walnes
 // See resistors-test.html
 
-
 var resistors = {};
 
 // These hex codes came from
@@ -22,42 +21,23 @@ resistors.digitsToColors = {
   '9' : {hex: '#ffffff', label: '#000', name: 'white' , figure: '9', multiplier: '1000M'}
 };
 
-/**
- * Main conversion function.
- *
- * Given a string '4.7k ohms', will return:
- * {
- *   value: 4700,
- *   formatted: '4.7K',
- *   smt: '472',
- *   colors5: [
- *     {hex: '#ffff00', label: '#000', name: 'yellow'},
- *     {hex: '#ee82ee', label: '#000', name: 'purple'},
- *     {hex: '#000000', label: '#fff', name: 'black'},
- *     {hex: '#964b00', label: '#fff', name: 'brown'},
- *   ],
- *   colors4: [
- *     {hex: '#ffff00', label: '#000', name: 'yellow'},
- *     {hex: '#ee82ee', label: '#000', name: 'purple'},
- *     {hex: '#ff0000', label: '#fff', name: 'red'},
- *   ]
- * }
- */
 resistors.query = function(input) {
   input = input.replace(/ +?/g, '')
                .replace(/ohm[s]?/, '')
                .replace(/\u2126/, '')
                .replace(/\.$/, '');
+
   var value = this.parseValue(input);
+
   if (value !== null) {
     value = this.roundToSignificantPlaces(value, 3);
+
     if ((value <= 99900000000 && value >= 1) || value === 0) {
       var colors5 = this.numberTo5ColorDigits(value);
       var colors4 = this.numberTo4ColorDigits(value);
       var smt3 = value < 10 ? colors4[0].toString() : colors4.join('');
-      //var smt4 = colors5.join('');
-      //var smtEia96 = colors5.join('');
       var self = this;
+
       return {
         value: value,
         smt3: smt3,
@@ -67,8 +47,10 @@ resistors.query = function(input) {
         colors5: colors5.map(function(d) { return self.digitsToColors[d] }),
         colors4: colors4.map(function(d) { return self.digitsToColors[d] }),
       };
+
     }
   }
+
   return null;
 };
 
@@ -79,6 +61,7 @@ resistors.query = function(input) {
 resistors.parseValue = function(input) {
   var multiplier = 1;
   var match;
+
   if (match = input.match(/^(\d+)(\.(\d+))?([km])?$/i)) {
     // e.g. 123, 1.23, 1M, 1.23M
     var unit = match[4];
@@ -90,6 +73,7 @@ resistors.parseValue = function(input) {
         multiplier = 1000000;
       }
     }
+
     return (match[1] + '.' + (match[3] || 0)) * multiplier;
   } else if (match = input.match(/^(\d+)([km])(\d+)$/i)) {
     // e.g. 12K3
@@ -129,6 +113,7 @@ resistors.numberTo5ColorDigits = function(value) {
   if (!value) {
     return [0, 0, 0, 0]; // Special case
   }
+  
   var precision = 5;
   var digits = (Math.floor(value * 100 * Math.pow(10, precision)) / Math.pow(10, precision)).toString();
   function getDigit(digits, i) {
@@ -150,6 +135,7 @@ resistors.numberTo4ColorDigits = function(value) {
   if (!value) {
     return [0, 0, 0]; // Special case
   }
+
   var precision = 5;
   var digits = (Math.floor(value * 100 * Math.pow(10, precision)) / Math.pow(10, precision)).toString();
   function getDigit(digits, i) {
